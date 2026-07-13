@@ -7,7 +7,7 @@
   <meta http-equiv="Expires" content="0">
   <script>
     (function () {
-      var buildVersion = '20260713-2309';
+      var buildVersion = '20260713-2318';
       var url = new URL(window.location.href);
       if (url.searchParams.get('v') !== buildVersion) {
         url.searchParams.set('v', buildVersion);
@@ -17,7 +17,45 @@
     })();
   </script>
 
-  <title>疯狂买买买</title>
+  <script>
+    (function () {
+      var statusEl = null;
+      function ensureStatus() {
+        if (statusEl || !document.body) return statusEl;
+        statusEl = document.createElement('div');
+        statusEl.id = '__boot_status';
+        statusEl.textContent = 'Loading...';
+        statusEl.style.cssText = [
+          'position:fixed', 'left:12px', 'right:12px', 'bottom:12px',
+          'z-index:2147483646', 'padding:8px 10px', 'border-radius:6px',
+          'background:rgba(0,0,0,.72)', 'color:#fff',
+          'font:12px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',
+          'text-align:left', 'word-break:break-word'
+        ].join(';');
+        document.body.appendChild(statusEl);
+        return statusEl;
+      }
+      window.__bootStatus = function (message) {
+        var el = ensureStatus();
+        if (el) el.textContent = message;
+      };
+      window.__hideBootStatus = function () {
+        if (statusEl) statusEl.style.display = 'none';
+      };
+      window.addEventListener('DOMContentLoaded', function () {
+        window.__bootStatus('Loading page...');
+      });
+      window.addEventListener('error', function (event) {
+        window.__bootStatus('ERROR: ' + (event.message || 'unknown'));
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event.reason;
+        window.__bootStatus('ERROR: ' + (reason && (reason.message || reason.stack) || reason));
+      });
+    })();
+  </script>
+
+  <title>疯狂买买买</title>
 
   <!--http://www.html5rocks.com/en/mobile/mobifying/-->
   <meta name="viewport"
