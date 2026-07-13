@@ -1,7 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <script>
+    (function () {
+      var buildVersion = '20260713-2309';
+      var url = new URL(window.location.href);
+      if (url.searchParams.get('v') !== buildVersion) {
+        url.searchParams.set('v', buildVersion);
+        url.searchParams.set('t', Date.now());
+        window.location.replace(url.toString());
+      }
+    })();
+  </script>
 
   <title>疯狂买买买</title>
 
