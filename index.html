@@ -68,6 +68,12 @@
         log('debug panel ready');
         log('ua: ' + navigator.userAgent);
         log('url: ' + location.href);
+        document.querySelectorAll('script[src]').forEach(function (script) {
+          log('script tag: ' + script.getAttribute('src'));
+        });
+      });
+      window.addEventListener('load', function () {
+        log('window load');
       });
       window.addEventListener('error', function (event) {
         log('ERROR: ' + (event.message || 'unknown') + ' @ ' + event.filename + ':' + event.lineno + ':' + event.colno);
@@ -89,6 +95,47 @@
           });
         };
       }
+      var originalCreateElement = document.createElement.bind(document);
+      document.createElement = function (tagName) {
+        var element = originalCreateElement(tagName);
+        if (String(tagName).toLowerCase() === 'script') {
+          element.addEventListener('load', function () {
+            log('dynamic script loaded: ' + (element.src || element.getAttribute('src') || 'inline'));
+          });
+          element.addEventListener('error', function () {
+            log('dynamic script error: ' + (element.src || element.getAttribute('src') || 'inline'));
+          });
+        }
+        return element;
+      };
+      function probe(label) {
+        var canvas = document.getElementById('GameCanvas');
+        var gameDiv = document.getElementById('GameDiv');
+        var info = [label];
+        info.push('ready=' + document.readyState);
+        info.push('System=' + !!window.System);
+        info.push('cc=' + !!window.cc);
+        if (canvas) {
+          var rect = canvas.getBoundingClientRect();
+          info.push('canvas=' + Math.round(rect.width) + 'x' + Math.round(rect.height));
+          info.push('buffer=' + canvas.width + 'x' + canvas.height);
+          try {
+            info.push('webgl=' + !!(canvas.getContext('webgl2') || canvas.getContext('webgl')));
+          } catch (err) {
+            info.push('webglErr=' + err.message);
+          }
+        } else {
+          info.push('canvas=missing');
+        }
+        if (gameDiv) {
+          var gameRect = gameDiv.getBoundingClientRect();
+          info.push('gameDiv=' + Math.round(gameRect.width) + 'x' + Math.round(gameRect.height));
+        }
+        log(info.join(' | '));
+      }
+      [500, 1500, 3000, 8000, 15000].forEach(function (ms) {
+        setTimeout(function () { probe('probe+' + ms + 'ms'); }, ms);
+      });
     })();
   </script>
 </head>
