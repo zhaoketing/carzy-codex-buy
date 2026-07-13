@@ -36,7 +36,62 @@
 
   <link rel="stylesheet" type="text/css" href="style.f76d1.css"/>
 
-</head>
+  <script>
+    (function () {
+      var debug = new URLSearchParams(location.search).get('debug') === '1';
+      if (!debug) return;
+      var lines = [];
+      var panel = null;
+      function render() {
+        if (!panel || !panel.isConnected) {
+          if (!document.body) return;
+          panel = document.createElement('pre');
+          panel.style.cssText = [
+            'position:fixed', 'left:0', 'right:0', 'bottom:0',
+            'max-height:45vh', 'overflow:auto', 'z-index:2147483647',
+            'margin:0', 'padding:10px', 'box-sizing:border-box',
+            'background:rgba(0,0,0,.86)', 'color:#8fffa2',
+            'font:12px/1.4 Menlo,Consolas,monospace',
+            'white-space:pre-wrap', 'word-break:break-word',
+            '-webkit-user-select:text', 'user-select:text'
+          ].join(';');
+          document.body.appendChild(panel);
+        }
+        panel.textContent = lines.slice(-80).join('\n');
+      }
+      function log(msg) {
+        lines.push(new Date().toLocaleTimeString() + ' ' + msg);
+        render();
+      }
+      window.__mobileDebugLog = log;
+      window.addEventListener('DOMContentLoaded', function () {
+        log('debug panel ready');
+        log('ua: ' + navigator.userAgent);
+        log('url: ' + location.href);
+      });
+      window.addEventListener('error', function (event) {
+        log('ERROR: ' + (event.message || 'unknown') + ' @ ' + event.filename + ':' + event.lineno + ':' + event.colno);
+      }, true);
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event.reason;
+        log('PROMISE: ' + (reason && (reason.stack || reason.message) || reason));
+      });
+      if (window.fetch) {
+        var originalFetch = window.fetch;
+        window.fetch = function () {
+          var url = arguments[0] && arguments[0].url || arguments[0];
+          return originalFetch.apply(this, arguments).then(function (res) {
+            if (!res.ok) log('FETCH ' + res.status + ': ' + url);
+            return res;
+          }, function (err) {
+            log('FETCH FAILED: ' + url + ' ' + (err && err.message || err));
+            throw err;
+          });
+        };
+      }
+    })();
+  </script>
+</head>
 <body>
   <div id="GameDiv" cc_exact_fit_screen="true">
       <div id="Cocos3dGameContainer">
