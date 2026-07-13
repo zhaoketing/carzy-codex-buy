@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Health Check</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 24px; line-height: 1.45; }
+    .ok { color: #047857; }
+    .bad { color: #b91c1c; }
+    code { word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h1>Health Check</h1>
+  <p id="page" class="ok">Page loaded.</p>
+  <p>URL: <code id="url"></code></p>
+  <p>User agent: <code id="ua"></code></p>
+  <p id="webgl">Checking WebGL...</p>
+  <p id="settings">Checking settings file...</p>
+  <p id="importmap">Checking import map...</p>
+  <script>
+    document.getElementById("url").textContent = location.href;
+    document.getElementById("ua").textContent = navigator.userAgent;
+
+    function set(id, ok, text) {
+      var el = document.getElementById(id);
+      el.className = ok ? "ok" : "bad";
+      el.textContent = text;
+    }
+
+    try {
+      var canvas = document.createElement("canvas");
+      var gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+      set("webgl", !!gl, gl ? "WebGL available." : "WebGL unavailable.");
+    } catch (err) {
+      set("webgl", false, "WebGL check failed: " + err.message);
+    }
+
+    fetch("src/settings.ef9cf.json", { cache: "no-store" })
+      .then(function (res) { set("settings", res.ok, "Settings file HTTP " + res.status); })
+      .catch(function (err) { set("settings", false, "Settings fetch failed: " + err.message); });
+
+    fetch("src/import-map.a5433.json", { cache: "no-store" })
+      .then(function (res) { set("importmap", res.ok, "Import map HTTP " + res.status); })
+      .catch(function (err) { set("importmap", false, "Import map fetch failed: " + err.message); });
+  </script>
+</body>
+</html>
